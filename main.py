@@ -25,8 +25,7 @@ from bokeh.io import curdoc
 from bokeh.models.widgets import Tabs
 
 # Each tab is drawn by one script
-# import local scripts for the tabs.
-# I use reload for debugginf to force 
+# I use reload for debugging to force 
 #   reload of changed modules
 import recommender
 import recommend_tab_simple
@@ -52,16 +51,10 @@ def tags_from_csv_list(taglist):
     return pd.DataFrame( {'tag':unique_tags, 'count':counts} ).sort_values(
         by='count', ascending=False)
 
-# Using included state data from Bokeh for map
-from bokeh.sampledata.us_states import data as states
-
 # load model
 recommender = RecommenderGSS(n_neighbors=10)
 
-# load data
-# datadir = './data/'
-
-# get board game data
+# load board game data
 #  note: this data contains feature data used by model,
 #     in future, I should probably calculate the features here at runtime
 allgames = pd.read_csv(join(dirname(__file__), 'data', 'bgg_game_data.csv'))
