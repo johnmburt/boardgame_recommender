@@ -1,1 +1,1 @@
-web: bokeh serve --port=$PORT --host=bgrecommender.herokuapp.com --host=*  --address=0.0.0.0 --use-xheaders main.py
+web: bokeh serve --port=$PORT --host=jmb-boardgame-recommender.herokuapp.com --host=*  --address=0.0.0.0 --use-xheaders main.py
