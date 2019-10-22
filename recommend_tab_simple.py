@@ -29,13 +29,13 @@ from bokeh.layouts import column, row, WidgetBox, Spacer
 from bokeh.palettes import Category20_16
 
 
-# In[96]:
+# In[1]:
 
 
-def recommender_tab_simple(recommender, allgames, genres, mechanics):
+def recommender_tab_simple(recommender, allgames, categories, mechanics):
 
     # Dataset for widgets
-    def make_dataset(weight_range, genres, mechanisms):
+    def make_dataset(weight_range, categories, mechanisms):
         
         # create ColumnDataSource with fields:
         # id,name,nrate,pic_url,nrating_pages,minplayers,maxplayers,
@@ -44,23 +44,23 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
         
         # filter games based on weight
         
-        # filter games based on genres
+        # filter games based on categories
         
-        games_sel = allgames # use all games for now
+        games_all = allgames # use all games for now
         
         # create the data source for bokeh
         return ColumnDataSource(data={
-            'game_id':games_sel['id'],
-            'title':games_sel['name'],
-            'weight':games_sel['weight'],
-            'genres':games_sel['categories'],
-            'mechanics':games_sel['mechanics'],
-            'image_url':games_sel['pic_url'],
-            'f0':games_sel['f_0'],
-            'f1':games_sel['f_1'],
-            'f2':games_sel['f_2'],
-            'f3':games_sel['f_3'],
-            'f4':games_sel['f_4']
+            'game_id':games_all['id'],
+            'title':games_all['name'],
+            'weight':games_all['weight'],
+            'categories':games_all['categories'],
+            'mechanics':games_all['mechanics'],
+            'image_url':games_all['pic_url'],
+            'f0':games_all['f_0'],
+            'f1':games_all['f_1'],
+            'f2':games_all['f_2'],
+            'f3':games_all['f_3'],
+            'f4':games_all['f_4']
             })
     
 #     # create the figure plot
@@ -92,10 +92,10 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
 #         print('update_filters')
         # get control values
         
-        # note: I need to also set games_sel
+        # note: I need to also set games_all
         
         # filter data to get new data source
-        new_src = make_dataset(weight_range, genres, mechanics)
+        new_src = make_dataset(weight_range, categories, mechanics)
         # update the plot/draw data
         src.data.update(new_src.data)
         
@@ -118,22 +118,20 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
 #         print('ctl_game_entry.value:', ctl_game_entry.value)
 #         print('liked_games: ',liked_games)
         liked_games = []
-#         update_liked_list(list(games_sel['name'].sample(max_liked)))
+#         update_liked_list(list(games_all['name'].sample(max_liked)))
         update_liked_list(liked_games)        
         
     def recommend_games():
         global liked_games, recommended_games
-        global games_sel, n_recommendations, title_list
+        global games_all, n_recommendations, title_list
 #         print('recommend games')
 #         print('liked_games',liked_games)
-        rec_idx = recommender.recommend_games_by_pref_list(
-            liked_games, games_sel, num2rec=n_recommendations)
-        # NOTE: there's going to be a problem here if I filter games searched:
-        #  the index won't match up. I should return the list of titles in 
-        #  the recommender.
-        # I also should consider passing the filter params to recommender and letting 
-        #   it handle the filtering, then if I need filtered data, call a method for that.
-        recommended_games = list(title_list[rec_idx])
+#         rec_idx = recommender.recommend_games_by_pref_list(
+#             liked_games, games_all, num2rec=n_recommendations)
+        recommended_games = recommender.recommend_games_by_pref_list(
+            liked_games, games_all, num2rec=n_recommendations)
+
+#         recommended_games = list(title_list[rec_idx])
 #         print('recommended_games',recommended_games)
         update_recommended_list(recommended_games)
     
@@ -147,7 +145,7 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
                 divs.append(Div(text=fmt_str%(' '), render_as_text=render_as_text))
         return divs
 
-    global liked_games, recommended_games, games_sel 
+    global liked_games, recommended_games, games_all 
     global n_recommendations, max_liked, title_list, title_list_lower
     
     # layout params
@@ -158,10 +156,10 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
     liked_games = []
     recommended_games = []
     weight_range = [1,5]
-    games_sel = allgames # use all games for search    
+    games_all = allgames # use all games for search    
         
     # list of all game titles
-    title_list = games_sel['name']
+    title_list = games_all['name']
     title_list_lower = [s.lower() for s in title_list]
     
     # preferred game entry text control
@@ -190,7 +188,7 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
                                     fmt_str="""<b>%s</b>""", 
                                     render_as_text=False))
     
-#     update_liked_list(list(games_sel['name'].sample(max_liked)))
+#     update_liked_list(list(games_all['name'].sample(max_liked)))
     
     # Recommend games button
     ctl_recommend = Button(label = 'Recommend some games!',width_policy='min')
@@ -203,9 +201,9 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
 
 #     num_checks = 20
     
-    # game genre checkbox group
-#     genre_selection = CheckboxGroup(labels=genres[:num_checks], active = [0, 1])
-#     genre_selection.on_change('active', update_filters)
+    # game category checkbox group
+#     category_selection = CheckboxGroup(labels=categories[:num_checks], active = [0, 1])
+#     category_selection.on_change('active', update_filters)
 
     # game mechanism checkbox group
 #     mechanism_selection = CheckboxGroup(labels=mechanisms[:num_checks], active = [0, 1])
@@ -213,7 +211,7 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
     
     
     # create the dataset
-    src = make_dataset(weight_range, genres, mechanics)
+    src = make_dataset(weight_range, categories, mechanics)
     
     # make the plot
 #     p = make_plot(src)
@@ -243,4 +241,10 @@ def recommender_tab_simple(recommender, allgames, genres, mechanics):
     tab = Panel(child=layout, title = 'Simple Game Recommender')
     
     return tab
+
+
+# In[ ]:
+
+
+
 

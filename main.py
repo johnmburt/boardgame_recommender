@@ -10,7 +10,7 @@
 # If run in Jupyter, it will give an error: "name '__file__' is not defined"
 # 
 
-# In[1]:
+# In[2]:
 
 
 # Pandas for data management
@@ -25,7 +25,8 @@ from bokeh.io import curdoc
 from bokeh.models.widgets import Tabs
 
 # Each tab is drawn by one script
-# I use reload for debugging to force 
+# import local scripts for the tabs.
+# I use reload for debugginf to force 
 #   reload of changed modules
 import recommender
 import recommend_tab_simple
@@ -51,26 +52,49 @@ def tags_from_csv_list(taglist):
     return pd.DataFrame( {'tag':unique_tags, 'count':counts} ).sort_values(
         by='count', ascending=False)
 
+# Using included state data from Bokeh for map
+from bokeh.sampledata.us_states import data as states
+
 # load model
 recommender = RecommenderGSS(n_neighbors=10)
 
-# load board game data
+# load data
+datadir = './data/'
+
+# get board game data
 #  note: this data contains feature data used by model,
 #     in future, I should probably calculate the features here at runtime
-allgames = pd.read_csv(join(dirname(__file__), 'data', 'bgg_game_data.csv'))
-# allgames = pd.read_csv(datadir+'bgg_game_data.csv')
-genres = tags_from_csv_list(allgames['categories'].values)
+# allgames = pd.read_csv(join(dirname(__file__), 'data', 'bgg_game_data.csv'))
+allgames = pd.read_csv(datadir+'bgg_game_data.csv')
+categories = tags_from_csv_list(allgames['categories'].values)
 mechanics = tags_from_csv_list(allgames['mechanics'].values)
 
 # Create each of the tabs
-tab1 = tab_simple.recommender_tab_simple(recommender, allgames, genres, mechanics)
-tab2 = tab_advanced.recommender_tab_advanced(recommender, allgames, genres, mechanics)
+tab1 = tab_simple.recommender_tab_simple(recommender, allgames, categories, mechanics)
+tab2 = tab_advanced.recommender_tab_advanced(recommender, allgames, categories, mechanics)
 
 # Put all the tabs into one application
-tabs = Tabs(tabs = [tab1,tab2])
+# tabs = Tabs(tabs = [tab1,tab2])
+tabs = Tabs(tabs = [tab2,tab1])
 
 # Put the tabs in the current document for display
 curdoc().add_root(tabs)
+
+
+# to run:
+# 
+# bokeh serve --show bokeh_app/
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
 
 # In[ ]:
