@@ -100,6 +100,7 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
         category_selections += [
             ctl_category_selection2.labels[i] for i in ctl_category_selection2.active]
 #         print(category_selections)
+
         mechanics_selections = [
             ctl_mechanics_selection1.labels[i] for i in ctl_mechanics_selection1.active]
         mechanics_selections += [
@@ -140,8 +141,8 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
              minrating=ctl_game_min_rating.value,
              categories_include=category_selections,
              categories_exclude=[],
-             mechanics_include=[],
-             mechanics_exclude=mechanics_selections
+             mechanics_include=mechanics_selections,
+             mechanics_exclude=[]
             )
         
         # NOTE: there's going to be a problem here if I filter games searched:
