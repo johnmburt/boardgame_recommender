@@ -19,12 +19,13 @@ class RecommenderGSS():
     """recommender engine as an estimator"""
 
     # ******************************************************************
-    def __init__(self, n_neighbors=10):
+    def __init__(self, n_neighbors=10, n_search_dims=3):
         """
         Called when initializing the model
         """
         # model parameters
         self.n_neighbors = n_neighbors  # number of neighbor titles to search for
+        self.n_search_dims = n_search_dims # number of dimensions to use for NN search
 
     # ******************************************************************
     def set_params(self, **params):
@@ -36,8 +37,12 @@ class RecommenderGSS():
 
         # get euclidean distances of all points to x
         # dists = cdist(np.reshape(x, (1, -1)), coords)
-        dists = cdist(x, coords)
-
+        #dists = cdist(x, coords)
+#         print(x[:,:self.n_search_dims].shape, 
+#               coords[:,:self.n_search_dims].shape)
+        dists = cdist(x[:,:self.n_search_dims], 
+                      coords[:,:self.n_search_dims])
+        
         # sort the distances
         ind, = np.argsort(dists)
 
@@ -48,9 +53,9 @@ class RecommenderGSS():
     def recommend_games_by_one_title(self, targettitle, game_data, search_data, num2rec=1):
         """Recommend games based on nearest neighbor to one game title"""
 
-        print('recommend_games_by_one_title:',targettitle)
-        print('game_data.shape', game_data.shape)
-        print('search_data.shape', search_data.shape)
+#         print('recommend_games_by_one_title:',targettitle)
+#         print('game_data.shape', game_data.shape)
+#         print('search_data.shape', search_data.shape)
         
         # NOTE: this needs to be cleaned up!
         
@@ -62,7 +67,7 @@ class RecommenderGSS():
                       ).nonzero()[0]
 #         print(targetindex, gametitles[targetindex])
         targetcoord = all_coords[targetindex, :]
-        print('targetcoord', targetcoord)
+#         print('targetcoord', targetcoord)
 
         if targetcoord.shape[0] == 0:
             return []
@@ -71,12 +76,12 @@ class RecommenderGSS():
         search_gametitles = search_data['name'].values
         
         # find nearest neighbors
-        print(search_coords.shape, targetcoord.shape)
+#         print(search_coords.shape, targetcoord.shape)
         ind = self.find_nearest_neighbors(search_coords, targetcoord, 
                                           max(self.n_neighbors, num2rec+1))
         # ind = self.find_nearest_neighbors(coords, targetcoord, num2rec + 1)
-        print('ind.shape',ind.shape)
-        print(ind[1:num2rec+1])
+#         print('ind.shape',ind.shape)
+#         print(ind[1:num2rec+1])
         # Note: first entry will be the target title (distance 0)
 #         print('returned: ', list(ind[1:num2rec+1]))
 
@@ -124,7 +129,7 @@ class RecommenderGSS():
         # start with all data
         filt_df = df
 
-        print('filter_data, all data:',filt_df.shape)
+#         print('filter_data, all data:',filt_df.shape)
 
         # filter by game weight
         # only filter if not defaults: [1,5]
@@ -149,6 +154,12 @@ class RecommenderGSS():
             filt_df = filt_df[ tags_in_col(filt_df['categories'], categories_include)]
 #             print('categories_include, filt_df:',filt_df.shape)
 
+        # filter by categories to exclude
+        # only filter if not default: []
+        if len(categories_exclude):
+            filt_df = filt_df[ ~(tags_in_col(filt_df['categories'], categories_exclude))]
+#             print('categories_exclude, filt_df:',filt_df.shape)
+
         # filter by mechanics to include
         # only filter if not default: [], or ['Any category',...]
         if (len(mechanics_include) and 
@@ -156,7 +167,7 @@ class RecommenderGSS():
             filt_df = filt_df[ tags_in_col(filt_df['mechanics'], mechanics_include)]
 #             print('mechanics_include, filt_df:',filt_df.shape)
 
-        print('   filt_df:',filt_df.shape)
+#         print('   filt_df:',filt_df.shape)
 
         return filt_df      
 
@@ -176,7 +187,7 @@ class RecommenderGSS():
         unique, counts = np.unique(recs, return_counts=True)
 #         print('unique, counts', unique, counts)
         recs = (np.array([unique, counts])[0, np.argsort(-counts)].T)
-        print('recommend_games_by_pref_list recs:',recs)
+#         print('recommend_games_by_pref_list recs:',recs)
         return recs[:num2rec]
     
  

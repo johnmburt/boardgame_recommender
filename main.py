@@ -10,7 +10,7 @@
 # If run in Jupyter, it will give an error: "name '__file__' is not defined"
 # 
 
-# In[2]:
+# In[5]:
 
 
 # Pandas for data management
@@ -56,7 +56,7 @@ def tags_from_csv_list(taglist):
 from bokeh.sampledata.us_states import data as states
 
 # load model
-recommender = RecommenderGSS(n_neighbors=10)
+recommender = RecommenderGSS(n_neighbors=20, n_search_dims=5)
 
 # load data
 datadir = './data/'
@@ -65,8 +65,17 @@ datadir = './data/'
 #  note: this data contains feature data used by model,
 #     in future, I should probably calculate the features here at runtime
 # allgames = pd.read_csv(join(dirname(__file__), 'data', 'bgg_game_data.csv'))
-allgames = pd.read_csv(datadir+'bgg_game_data.csv')
+# allgames = pd.read_csv(datadir+'bgg_game_data.csv')
+allgames = pd.read_hdf(datadir+'bgg_game_data_big_v2.h5')
+
+# set any games with no categories or mechanics to 'none'
+allgames.loc[allgames['categories'].isnull(), 'categories'] = 'none'
+allgames.loc[allgames['mechanics'].isnull(), 'mechanics'] = 'none'
+
+# get all categories and mechanics, sorted by counts
 categories = tags_from_csv_list(allgames['categories'].values)
+categories = categories[categories['tag'] != 'Expansion for Base-game']
+
 mechanics = tags_from_csv_list(allgames['mechanics'].values)
 
 # Create each of the tabs
@@ -74,8 +83,8 @@ tab1 = tab_simple.recommender_tab_simple(recommender, allgames, categories, mech
 tab2 = tab_advanced.recommender_tab_advanced(recommender, allgames, categories, mechanics)
 
 # Put all the tabs into one application
-# tabs = Tabs(tabs = [tab1,tab2])
-tabs = Tabs(tabs = [tab2,tab1])
+tabs = Tabs(tabs = [tab1,tab2])
+# tabs = Tabs(tabs = [tab2,tab1])
 
 # Put the tabs in the current document for display
 curdoc().add_root(tabs)
@@ -85,16 +94,19 @@ curdoc().add_root(tabs)
 # 
 # bokeh serve --show bokeh_app/
 
-# In[ ]:
+# In[1]:
 
 
+# title_list = allgames['name']
+# title_list_lower = [s.lower() for s in title_list]
 
+# title = 'catan'
+# idx = (np.array(title_list_lower) 
+#        == title.lower()).nonzero()[0][0]
+# print('idx: ',idx)
 
-
-# In[ ]:
-
-
-
+# info = allgames.iloc[idx,:]
+# type(info['weight'])
 
 
 # In[ ]:

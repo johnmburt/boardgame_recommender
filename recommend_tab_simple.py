@@ -29,7 +29,7 @@ from bokeh.layouts import column, row, WidgetBox, Spacer
 from bokeh.palettes import Category20_16
 
 
-# In[1]:
+# In[2]:
 
 
 def recommender_tab_simple(recommender, allgames, categories, mechanics):
@@ -77,14 +77,14 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         global max_liked
         ctl_liked_games.children = make_div_list(titlelist, 
                                                  max_liked, 
-                                                 fmt_str="""%s""", 
-                                                 render_as_text=True)
+                                                 fmt_str=liked_list_fmt, 
+                                                 render_as_text=False)
         
     def update_recommended_list(titlelist):
         global n_recommendations
         ctl_recommended_games.children = make_div_list(titlelist, 
                                                  n_recommendations, 
-                                                 fmt_str="""<b>%s</b>""", 
+                                                 fmt_str=recommended_list_fmt, 
                                                  render_as_text=False)
 
     # called when a control widget is changed
@@ -124,25 +124,57 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
     def recommend_games():
         global liked_games, recommended_games
         global games_all, n_recommendations, title_list
-#         print('recommend games')
-#         print('liked_games',liked_games)
-#         rec_idx = recommender.recommend_games_by_pref_list(
-#             liked_games, games_all, num2rec=n_recommendations)
+        global title_list_lower
+        
+        # get some filter parameters:
+        weight = []
+        minrating = 7
+        categories = ['Any category']
+        mechanics = ['Any mechanism']
+        for title in liked_games:
+            idx = (np.array(title_list_lower) 
+                   == title.lower()).nonzero()[0][0]
+            info = games_all.iloc[idx,:]
+            weight.append(info['weight'])
+            categories += info['categories'].split(',')
+            mechanics += info['mechanics'].split(',')
+            
+        weightrange = [max(1,np.min(weight)-0.25),
+                       min(5,np.max(weight)+0.25)]
+#         if len(categories) > 3:
+#            categories = ['Any category']
+#         if len(mechanics) > 3:
+#            mechanics = ['Any mechanism']  
+#         print('recommend_games, filters:')
+#         print('  weightrange =',weightrange)
+#         print('  categories =',categories)
+#         print('  mechanics =',mechanics)
+        
+        # select games to search from based on filters:
+        # NOTE: put filtering inside recommender class
         recommended_games = recommender.recommend_games_by_pref_list(
-            liked_games, games_all, num2rec=n_recommendations)
+            liked_games, games_all, num2rec=n_recommendations,
+             weightrange=weightrange,
+             minrating=minrating,
+             categories_include=categories,
+             categories_exclude=['Expansion for Base-game'],
+             mechanics_include=mechanics,
+             mechanics_exclude=[]
+            )
+        
+#         recommended_games = recommender.recommend_games_by_pref_list(
+#             liked_games, games_all, num2rec=n_recommendations)
 
-#         recommended_games = list(title_list[rec_idx])
-#         print('recommended_games',recommended_games)
         update_recommended_list(recommended_games)
     
-    def make_div_list(textlist, max_lines, fmt_str="""%s""", render_as_text=True):
+    def make_div_list(textlist, max_lines, fmt_str="""%s""", **attribs):
         # see also: width=200, height=100 + other html formatting
         divs = []
         for i in range(max_lines):
             if len(textlist) > i:
-                divs.append(Div(text=fmt_str%(textlist[i]), render_as_text=render_as_text))
+                divs.append(Div(text=fmt_str%(textlist[i]), **attribs)) 
             else:
-                divs.append(Div(text=fmt_str%(' '), render_as_text=render_as_text))
+                divs.append(Div(text=fmt_str%(' '), **attribs))
         return divs
 
     global liked_games, recommended_games, games_all 
@@ -150,8 +182,10 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
     
     # layout params
     n_recommendations = 10
-    max_liked = 10
-    
+    max_liked = 8
+    liked_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
+    recommended_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
+
     # variables used by the tab
     liked_games = []
     recommended_games = []
@@ -174,19 +208,20 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
     ctl_reset_prefs.on_click(reset_preferred_games)
     
     # liked list title
-    ctl_liked_list_title = Div(text="""<h2>Games you like:</h2>""")
-    
+    ctl_liked_list_title = Div(text=
+        """<div style="font-size : 18pt; line-height:16pt;">Games you like:</div>""")
+   
     # liked game entries
     ctl_liked_games = WidgetBox(children=make_div_list(liked_games, max_liked, 
-                                    fmt_str="""%s""", 
-                                    render_as_text=True))
+        fmt_str=liked_list_fmt))
+    
     # recommended list title
-    ctl_recommended_list_title = Div(text="""<h2>Games we recommend:</h2>""")
+    ctl_recommended_list_title = Div(text=
+        """<div style="font-size : 18pt; line-height:16pt;">Games we recommend:</div>""")
     
     # recommended games
-    ctl_recommended_games = WidgetBox(children=make_div_list(recommended_games, n_recommendations, 
-                                    fmt_str="""<b>%s</b>""", 
-                                    render_as_text=False))
+    ctl_recommended_games = WidgetBox(children=make_div_list(recommended_games, 
+        n_recommendations, fmt_str=recommended_list_fmt))
     
 #     update_liked_list(list(games_all['name'].sample(max_liked)))
     

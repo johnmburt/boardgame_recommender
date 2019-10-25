@@ -12,7 +12,7 @@
 # - plot games 3D interactive
 # 
 
-# In[3]:
+# In[2]:
 
 
 # pandas and numpy for data manipulation
@@ -86,33 +86,26 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
 
     # called when a control widget is changed
     def update_filters(attr, old, new):
-        global category_includes, category_excludes
-        global category_selections, mechanics_selections
-#         print('update_filters')
-#         print(ctl_game_weight.value)
-#         print(ctl_game_min_rating.value)
-#         if ctl_category_select_include.value:
-#             category_includes = list(set(category_includes + ctl_category_select_include.value))
-#             ctl_category_select_include.value = ''
-#             print(category_includes)
-        category_selections = [
+        global category_includes, mechanics_includes
+        global category_excludes, mechanics_excludes
+
+        category_includes = [
             ctl_category_selection1.labels[i] for i in ctl_category_selection1.active]
-        category_selections += [
+        category_includes += [
             ctl_category_selection2.labels[i] for i in ctl_category_selection2.active]
-#         print(category_selections)
+#         print(category_includes)
 
-        mechanics_selections = [
+        mechanics_includes = [
             ctl_mechanics_selection1.labels[i] for i in ctl_mechanics_selection1.active]
-        mechanics_selections += [
+        mechanics_includes += [
             ctl_mechanics_selection2.labels[i] for i in ctl_mechanics_selection2.active]
-#         print(mechanics_selections)
+#         print(mechanics_includes)
 
-        # note: I need to also set games_all
-        
-        # filter data to get new data source
-#         new_src = make_dataset(weight_range, categories, mechanics)
-#         # update the plot/draw data
-#         src.data.update(new_src.data)
+        # NOTE: this will need to be changed if I ever implement exclude selections!
+        if ctl_include_expansions.active:
+            category_excludes = []
+        else:
+            category_excludes = ['Expansion for Base-game']           
         
     # called when a control widget is changed
     def update_preflist(attr, old, new):
@@ -131,7 +124,7 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     def recommend_games():
         global liked_games, recommended_games
         global games_all, n_recommendations, title_list
-        global category_selections, mechanics_selections
+        global category_includes, mechanics_includes
         
         # select games to search from based on filters:
         # NOTE: put filtering inside recommender class
@@ -139,22 +132,16 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
             liked_games, games_all, num2rec=n_recommendations,
              weightrange=ctl_game_weight.value,
              minrating=ctl_game_min_rating.value,
-             categories_include=category_selections,
-             categories_exclude=[],
-             mechanics_include=mechanics_selections,
-             mechanics_exclude=[]
+             categories_include=category_includes,
+             categories_exclude=category_excludes,
+             mechanics_include=mechanics_includes,
+             mechanics_exclude=mechanics_excludes
             )
         
-        # NOTE: there's going to be a problem here if I filter games searched:
-        #  the index won't match up. I should return the list of titles in 
-        #  the recommender.
-        # I also should consider passing the filter params to recommender and letting 
-        #   it handle the filtering, then if I need filtered data, call a method for that.
-#         recommended_games = list(title_list[rec_idx])
+        # show the recommended games
         update_recommended_list(recommended_games)
     
     def make_div_list(textlist, max_lines, fmt_str="""%s""", **attribs):
-#     def make_div_list(textlist, max_lines, fmt_str="""%s""", render_as_text=False):
         # see also: width=200, height=100 + other html formatting
         divs = []
         for i in range(max_lines):
@@ -166,22 +153,25 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
 
     global liked_games, recommended_games, games_all
     global n_recommendations, max_liked, title_list, title_list_lower
-    global category_selections, mechanics_selections
+    global category_includes, mechanics_includes
+    global category_excludes, mechanics_excludes
     
     # layout params
     n_recommendations = 10
-    max_liked = 10
+    max_liked = 8
     num_check_options = 20
-    liked_list_fmt = """<div style="font-size : 12pt; line-height:1pt;">%s</div>"""
-    recommended_list_fmt = """<div style="font-size : 14pt; line-height:12pt;">%s</div>"""
+    liked_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
+    recommended_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
     
     # variables used by the tab
     games_all = allgames # use all games for search     
     liked_games = []
     recommended_games = []
     weight_range = [1,5]
-    category_selections = []
-    mechanics_selections = []
+    category_includes = []
+    mechanics_includes = []
+    category_excludes = []
+    mechanics_excludes = []
 
     # list of all game titles
     title_list = games_all['name']
@@ -199,14 +189,16 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     ctl_reset_prefs.on_click(reset_preferred_games)
     
     # liked list title
-    ctl_liked_list_title = Div(text="""<h2>Games you like:</h2>""")
+    ctl_liked_list_title = Div(text=
+        """<div style="font-size : 18pt; line-height:16pt;">Games you like:</div>""")
     
     # liked game entries
     ctl_liked_games = WidgetBox(children=make_div_list(liked_games, max_liked, 
         fmt_str=liked_list_fmt))
     
     # recommended list title
-    ctl_recommended_list_title = Div(text="""<h2>Games we recommend:</h2>""")
+    ctl_recommended_list_title = Div(text=
+        """<div style="font-size : 18pt; line-height:16pt;">Games we recommend:</div>""")
     
     # recommended games
     ctl_recommended_games = WidgetBox(children=make_div_list(recommended_games, 
@@ -227,7 +219,7 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     ctl_game_weight.on_change('value', update_filters)
     
     # min game rating slider
-    ctl_game_min_rating = Slider(start = 1, end = 10, value = 1,
+    ctl_game_min_rating = Slider(start = 1, end = 10, value = 7,
         step = .1, title = 'Minimum average rating', 
                                  width_policy='min')
     ctl_game_min_rating.on_change('value', update_filters)
@@ -256,6 +248,11 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
         width_policy='min')
     ctl_mechanics_selection2.on_change('active', update_filters)
         
+    # select whether to include expansions
+    ctl_include_expansions = CheckboxGroup(labels=['Include game expansions'],
+                                           width_policy='min')
+    ctl_include_expansions.on_change('active', update_filters)
+    
     # make the plot
 #     p = make_plot(src)
     # Add style to the plot
@@ -269,16 +266,19 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
         ctl_game_entry, 
         ctl_reset_prefs,
         Spacer(min_height=5),
-        )
+        ) 
     
+    ctl_liked_list_title = Div(text=
+        """<div style="font-size : 18pt; line-height:16pt;">Game Categories:</div>""")
+
     filter_controls = WidgetBox(
-        row(ctl_game_weight, Spacer(min_width=50), ctl_game_min_rating),
-#         ctl_category_select_include,
+        row(ctl_game_weight, Spacer(min_width=50), ctl_game_min_rating, 
+            Spacer(min_width=50), ctl_include_expansions),
         row(
-            column(Div(text="""<h3>Game Categories:</h3>"""),
+            column(Div(text="""<div style="font-size : 18pt; line-height:16pt;">Game Categories:</div>"""),
                 row(ctl_category_selection1, ctl_category_selection2)),
             Spacer(min_width=50),
-            column(Div(text="""<h3>Game Mechanics:</h3>"""),
+            column(Div(text="""<div style="font-size : 18pt; line-height:16pt;">Game Mechanics:</div>"""),
                 row(ctl_mechanics_selection1, ctl_mechanics_selection2)),
             )
         )
@@ -287,7 +287,7 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     results_controls = WidgetBox(
         ctl_recommended_list_title,
         ctl_recommended_games,
-        Spacer(min_height=40),
+        Spacer(min_height=10),
         ctl_recommend)
     
     # Create a row layout
