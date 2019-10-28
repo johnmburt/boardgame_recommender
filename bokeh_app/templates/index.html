@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <style>
+			body {
+			background-image: url(static/images/pic2676444_five_tribes_dark.jpg); 
+			background-color: #ebe2ca;
+			}
+            
+        </style>
         <meta charset="utf-8">
         {{ bokeh_css }}
         {{ bokeh_js }}
-		<style type="text/css">{% include 'styles.css' %}</style>
+        <style>
+             {% include 'styles.css' %}
+        </style>
+        <div class="content">
+        </div>
     </head>
     <body>
         {{ plot_div|indent(8) }}
         {{ plot_script|indent(8) }}
     </body>
+
 </html>
