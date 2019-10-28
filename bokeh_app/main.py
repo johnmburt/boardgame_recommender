@@ -66,7 +66,9 @@ datadir = './data/'
 #     in future, I should probably calculate the features here at runtime
 # allgames = pd.read_csv(join(dirname(__file__), 'data', 'bgg_game_data.csv'))
 # allgames = pd.read_csv(datadir+'bgg_game_data.csv')
-allgames = pd.read_hdf(datadir+'bgg_game_data_big_v2.h5')
+# allgames = pd.read_hdf(datadir+'bgg_game_data_big_v2.h5')
+allgames = pd.read_hdf(join(dirname(__file__), 'data', 
+                            'bgg_game_data_big_v2.h5'))
 
 # set any games with no categories or mechanics to 'none'
 allgames.loc[allgames['categories'].isnull(), 'categories'] = 'none'
