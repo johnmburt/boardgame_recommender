@@ -40,3 +40,36 @@ body {
 .bk-root .bk-tabs-header .bk-tab:hover{
 	background-color: #ffffff;
 }
+
+
+.rec-post-container {
+    margin: 50px 400px 0 0;  
+}
+.rec-post-thumb {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	display: inline-block;
+    vertical-align: top;
+    width: 46%;
+}
+.rec-post-thumb img {
+    display: block
+	max-width:100px;
+	width: auto;
+	height: auto;	
+}
+.rec-post-content {
+	display: inline-block;
+	width: 46%;
+}
+.rec-post-title {
+	position: absolute;
+	top: 1px;
+	left: 5px;
+	left: 100px;
+    font-weight: bold;
+    font-size: 150%
+	color:  #000000 ;
+
+}
