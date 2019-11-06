@@ -36,7 +36,6 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
 
     # create a list of divs
     def make_div_list(textlist, max_lines, fmt_str="""%s""", **attribs):
-        # see also: width=200, height=100 + other html formatting
         divs = []
         for i in range(max_lines):
             if len(textlist) > i:
@@ -159,7 +158,8 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
     title_list_lower = [s.lower() for s in title_list]
     
     # preferred game entry text control
-    ctl_game_entry = AutocompleteInput(completions=title_list_lower,
+    ctl_game_entry = AutocompleteInput(
+        completions=list(title_list)+list(title_list_lower),
         min_characters = 1,                               
         title = 'Enter some game names you like:')
     ctl_game_entry.on_change('value', update_preflist)

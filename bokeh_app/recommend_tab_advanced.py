@@ -169,7 +169,8 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     games_by_title = allgames.set_index('name')
     
     # preferred game entry text control
-    ctl_game_entry = AutocompleteInput(completions=title_list_lower,
+    ctl_game_entry = AutocompleteInput(
+        completions=list(title_list)+list(title_list_lower),
         min_characters = 1,                               
         title = 'Enter some game names you like:')
     ctl_game_entry.on_change('value', update_preflist)
