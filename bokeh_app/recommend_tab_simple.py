@@ -113,7 +113,7 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         
         # get some default filter parameters:
         weight = []
-        minrating = 7.5
+        minrating = 6.5
         categories = ['Any category']
         mechanics = ['Any mechanism']
         for title in liked_games:
