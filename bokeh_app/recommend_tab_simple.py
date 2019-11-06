@@ -36,6 +36,7 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
 
     # create a list of divs
     def make_div_list(textlist, max_lines, fmt_str="""%s""", **attribs):
+        """create a list of divs containing text to display"""
         divs = []
         for i in range(max_lines):
             if len(textlist) > i:
@@ -45,6 +46,8 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         return divs
 
     def make_rec_list(titles, max_lines):
+        """create a recommendation list of games,
+        with a thumbnail, game title, info and Amazon buy links"""
         global games_by_title
         fmt_str1="""
             <div class="rec-post-container">                
@@ -58,6 +61,7 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         fmt_str2=""""""
         divs = []
         for i in range(max_lines):
+            # there is a title available for this list slot
             if len(titles) > i:
                 divs.append(Div(text=fmt_str1%(
                     games_by_title['pic_url'].loc[titles[i]],
@@ -67,6 +71,7 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
                     'https://www.amazon.com/s?k=' + titles[i].replace(' ','+') + 
                         '&i=toys-and-games'
                 ))) 
+            # there no title available for this list slot
             else:
                 divs.append(Div(text=fmt_str2))
         return divs
@@ -124,7 +129,6 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
                        min(5,np.max(weight)+0.25)]
         
         # select games to search from based on filters:
-        # NOTE: put filtering inside recommender class
         recommended_games = recommender.recommend_games_by_pref_list(
             liked_games, games_all, num2rec=n_recommendations,
              weightrange=weightrange,
@@ -137,6 +141,8 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
 
         update_recommended_list(recommended_games)   
 
+    # NOTE: I'm using globals because I'm running into variable scope
+    #  problems with the bokeh handlers. Easiest to declare globals
     global liked_games, recommended_games, games_all 
     global n_recommendations, max_liked, title_list, title_list_lower
     global games_by_title
@@ -144,6 +150,8 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
     # layout params
     n_recommendations = 5
     max_liked = 8
+    # Format to use for liked list. 
+    # This needs to be changed to work like rec list
     liked_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
 
     # variables used by the tab
@@ -164,7 +172,7 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         title = 'Enter some game names you like:')
     ctl_game_entry.on_change('value', update_preflist)
     
-    # reset button
+    # reset liked game list button
     ctl_reset_prefs = Button(label = 'Reset game list',
                              width_policy='min', align='end')
     ctl_reset_prefs.on_click(reset_preferred_games)

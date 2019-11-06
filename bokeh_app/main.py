@@ -13,13 +13,6 @@
 # In[1]:
 
 
-s = 'lords of waterdeep'
-s.replace(' ','+')
-
-
-# In[1]:
-
-
 # Pandas for data management
 import pandas as pd
 import numpy as np
@@ -59,21 +52,10 @@ def tags_from_csv_list(taglist):
     return pd.DataFrame( {'tag':unique_tags, 'count':counts} ).sort_values(
         by='count', ascending=False)
 
-# Using included state data from Bokeh for map
-from bokeh.sampledata.us_states import data as states
-
-# load model
-recommender = RecommenderGSS(n_neighbors=20, n_search_dims=5)
-
 # load data
 datadir = './data/'
 
 # get board game data
-#  note: this data contains feature data used by model,
-#     in future, I should probably calculate the features here at runtime
-# allgames = pd.read_csv(join(dirname(__file__), 'data', 'bgg_game_data.csv'))
-# allgames = pd.read_csv(datadir+'bgg_game_data.csv')
-# allgames = pd.read_hdf(datadir+'bgg_game_data_big_v2.h5')
 allgames = pd.read_hdf(join(dirname(__file__), 'data', 
                             'bgg_game_data_big.h5'))
 
@@ -81,11 +63,25 @@ allgames = pd.read_hdf(join(dirname(__file__), 'data',
 allgames.loc[allgames['categories'].isnull(), 'categories'] = 'none'
 allgames.loc[allgames['mechanics'].isnull(), 'mechanics'] = 'none'
 
-# get all categories and mechanics, sorted by counts
+# get all categories, sorted by counts
 categories = tags_from_csv_list(allgames['categories'].values)
 categories = categories[categories['tag'] != 'Expansion for Base-game']
 
+# get list of all mechanics, sorted by counts
 mechanics = tags_from_csv_list(allgames['mechanics'].values)
+
+# Number of neighbors to search when selecting recommendations.
+# This number matters less than I'd have thought. Tunes to ~8-10, 
+#  but I'm setting it to 50 here to generate some randomness 
+#  in the recs: the alg randomly selects n_recs from nearest n_neighbors
+n_neighbors = 50
+
+# number of game space features in this dataset
+# NOTE: it may be good to limit search dims < # features
+n_search_dims = len([s for s in allgames.columns if 'f_' in s])
+
+# load model
+recommender = RecommenderGSS(n_neighbors=n_neighbors, n_search_dims=n_search_dims)
 
 # Create each of the tabs
 tab1 = tab_simple.recommender_tab_simple(recommender, allgames, categories, mechanics)

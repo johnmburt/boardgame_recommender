@@ -12,7 +12,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.decomposition import TruncatedSVD, PCA
 from scipy.spatial.distance import cdist
 from sklearn.preprocessing import StandardScaler
-
+from numpy.random import shuffle
 
 # Recommender model 1: Game Space Search
 class RecommenderGSS():
@@ -36,10 +36,6 @@ class RecommenderGSS():
         """Brute force nearest neighbor search"""
 
         # get euclidean distances of all points to x
-        # dists = cdist(np.reshape(x, (1, -1)), coords)
-        #dists = cdist(x, coords)
-#         print(x[:,:self.n_search_dims].shape, 
-#               coords[:,:self.n_search_dims].shape)
         dists = cdist(x[:,:self.n_search_dims], 
                       coords[:,:self.n_search_dims])
         
@@ -53,69 +49,30 @@ class RecommenderGSS():
     def recommend_games_by_one_title(self, targettitle, game_data, search_data, num2rec=1):
         """Recommend games based on nearest neighbor to one game title"""
 
-#         print('recommend_games_by_one_title:',targettitle)
-#         print('game_data.shape', game_data.shape)
-#         print('search_data.shape', search_data.shape)
-        
-        # NOTE: this needs to be cleaned up!
-        
         all_gametitles = game_data['name'].values
         all_coords = game_data[[s for s in game_data.columns if 'f_' in s]].values
-        # get coords of target title,
-        # use case insensitive search
+        # get coords of target title, use case insensitive search
         targetindex = (np.array([s.lower() for s in all_gametitles]) == targettitle.lower()
                       ).nonzero()[0]
-#         print(targetindex, gametitles[targetindex])
         targetcoord = all_coords[targetindex, :]
-#         print('targetcoord', targetcoord)
 
         if targetcoord.shape[0] == 0:
             return []
 
+        # create coordinates to search for nearest neighbors
         search_coords = search_data[[s for s in game_data.columns if 'f_' in s]].values
         search_gametitles = search_data['name'].values
         
         # find nearest neighbors
-#         print(search_coords.shape, targetcoord.shape)
         ind = self.find_nearest_neighbors(search_coords, targetcoord, 
                                           max(self.n_neighbors, num2rec+1))
-        # ind = self.find_nearest_neighbors(coords, targetcoord, num2rec + 1)
-#         print('ind.shape',ind.shape)
-#         print(ind[1:num2rec+1])
-        # Note: first entry will be the target title (distance 0)
-#         print('returned: ', list(ind[1:num2rec+1]))
-
-#         return list(ind[1:num2rec+1])
-        return list(search_gametitles[ind[1:num2rec+1]])
-
-#     # ******************************************************************
-#     def recommend_games_by_prefs_sets(self, pref, game_data, num2rec=10):
-#         """Recommend games using multiple liked and disliked games.
-#            This method creates a set of recommended games for each title in prefs and
-#              then selects the most commonly recommended,
-#              excluding any recs based on disliked games"""
-
-#         recs = []
-#         for title in pref['like']:
-#             recs.extend(self.recommend_games_by_one_title(title, self.n_neighbors))
-#         unique, counts = np.unique(recs, return_counts=True)
-#         recs = (np.array([unique, counts])[0, np.argsort(-counts)].T)
-
-#         norecs = []
-#         for title in pref['dislike']:
-#             norecs.extend(self.recommend_games_by_one_title(title, game_data, self.n_neighbors))
-#         norecs = list(np.unique(norecs))
-
-#         allrecs = []
-#         for r in recs:
-#             if ~any(r == norecs):
-#                 allrecs.append(r)
-
-#         return allrecs[:num2rec]
-    
-    # ******************************************************************
-    def remove_prefs_from_recs(self, preflist, game_data, recs):
-        pass
+        # drop the nearest (the target game title)
+        ind = ind[1:]
+              
+        # shuffle the indices to randomize order
+        shuffle(ind)
+        
+        return list(search_gametitles[ind[:num2rec]])
     
     # ******************************************************************
     def filter_data(self, df, 
@@ -181,20 +138,13 @@ class RecommenderGSS():
         recs = []
         for title in preflist:
             recs.extend(self.recommend_games_by_one_title(title, game_data,
-                self.filter_data(game_data, **filtargs), self.n_neighbors))
-#         print('recs',recs)
+#                 self.filter_data(game_data, **filtargs), self.n_neighbors))
+                self.filter_data(game_data, **filtargs), num2rec))
+            
         # NOTE: np.unique sorts the results, which could create a bias for older games 
         unique, counts = np.unique(recs, return_counts=True)
-#         print('unique, counts', unique, counts)
         recs = (np.array([unique, counts])[0, np.argsort(-counts)].T)
-#         print('recommend_games_by_pref_list recs:',recs)
         return recs[:num2rec]
     
  
-
-
-# In[ ]:
-
-
-
 
