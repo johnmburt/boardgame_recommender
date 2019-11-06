@@ -51,7 +51,9 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
             <div class="rec-post-container">                
                 <div class="rec-post-thumb"><img src="%s" /></div>
                 <div class="rec-post-content">
-                    <h3 class="rec-post-title">%s</h3>
+                    <h3 class="rec-post-title">%s<br>
+                    <a href="%s" target="_blank">Info</a><span>&nbsp;&nbsp;</span>
+                    <a href="%s" target="_blank">Buy on Amazon</a> </h3>
                 </div>
             </div>"""        
         fmt_str2=""""""
@@ -60,7 +62,12 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
             if len(titles) > i:
                 divs.append(Div(text=fmt_str1%(
                     games_by_title['pic_url'].loc[titles[i]],
-                    titles[i]))) 
+                    titles[i],
+                    'https://boardgamegeek.com/boardgame/' + 
+                        str(games_by_title['id'].loc[titles[i]]),
+                    'https://www.amazon.com/s?k=' + titles[i].replace(' ','+') + 
+                        '&i=toys-and-games'
+                ))) 
             else:
                 divs.append(Div(text=fmt_str2))
         return divs
@@ -102,7 +109,7 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         
         # get some default filter parameters:
         weight = []
-        minrating = 7
+        minrating = 7.5
         categories = ['Any category']
         mechanics = ['Any mechanism']
         for title in liked_games:
@@ -129,18 +136,16 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
              mechanics_exclude=[]
             )
 
-        update_recommended_list(recommended_games)
-    
+        update_recommended_list(recommended_games)   
 
     global liked_games, recommended_games, games_all 
     global n_recommendations, max_liked, title_list, title_list_lower
     global games_by_title
     
     # layout params
-    n_recommendations = 10
+    n_recommendations = 5
     max_liked = 8
     liked_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
-#     recommended_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
 
     # variables used by the tab
     liked_games = []
@@ -206,4 +211,10 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
     tab = Panel(child=layout, title = 'Simple Game Recommender')
     
     return tab
+
+
+# In[ ]:
+
+
+
 

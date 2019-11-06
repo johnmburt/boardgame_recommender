@@ -48,7 +48,9 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
             <div class="rec-post-container">                
                 <div class="rec-post-thumb"><img src="%s" /></div>
                 <div class="rec-post-content">
-                    <h3 class="rec-post-title">%s</h3>
+                    <h3 class="rec-post-title">%s<br>
+                    <a href="%s" target="_blank">Info</a><span>&nbsp;&nbsp;</span>
+                    <a href="%s" target="_blank">Buy on Amazon</a> </h3>
                 </div>
             </div>"""        
         fmt_str2=""""""
@@ -57,11 +59,16 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
             if len(titles) > i:
                 divs.append(Div(text=fmt_str1%(
                     games_by_title['pic_url'].loc[titles[i]],
-                    titles[i]))) 
+                    titles[i],
+                    'https://boardgamegeek.com/boardgame/' + 
+                        str(games_by_title['id'].loc[titles[i]]),
+                    'https://www.amazon.com/s?k=' + titles[i].replace(' ','+') + 
+                        '&i=toys-and-games'
+                ))) 
             else:
                 divs.append(Div(text=fmt_str2))
         return divs
-          
+         
 
     # update the 'liked games' list UI elements
     def update_liked_list(titlelist):
@@ -141,11 +148,10 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     global games_by_title
     
     # layout params
-    n_recommendations = 10
+    n_recommendations = 5
     max_liked = 8
     num_check_options = 20
     liked_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
-#     recommended_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
     
     # variables used by the tab
     games_all = allgames # use all games for search     
@@ -207,8 +213,6 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     
     # game category selection
     category_list = ['Any category'] + list(categories['tag'].values)    
-#     ctl_category_select_include = MultiSelect(options=category_list)
-#     ctl_category_select_include = Select(options=category_list)
     ctl_category_selection1 = CheckboxGroup(
         labels=category_list[:int(num_check_options/2)], 
         width_policy='min', active = [0])
@@ -248,14 +252,15 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
         """<div style="font-size : 18pt; line-height:16pt;">Game Categories:</div>""")
 
     filter_controls = WidgetBox(
-        row(ctl_game_weight, Spacer(min_width=50), ctl_game_min_rating, 
-            Spacer(min_width=50), ctl_include_expansions),
-        row(
-            column(Div(text="""<div style="font-size : 18pt; line-height:16pt;">Game Categories:</div>"""),
-                row(ctl_category_selection1, ctl_category_selection2)),
-            Spacer(min_width=50),
-            column(Div(text="""<div style="font-size : 18pt; line-height:16pt;">Game Mechanics:</div>"""),
-                row(ctl_mechanics_selection1, ctl_mechanics_selection2)),
+        row(ctl_game_weight, Spacer(min_width=50), ctl_game_min_rating),
+        row(ctl_include_expansions),
+        column(
+            row(Div(text="""<div style="font-size : 18pt; line-height:16pt;">Game Categories:</div>"""),
+                Spacer(min_width=50), ctl_recommend),
+            row(ctl_category_selection1, ctl_category_selection2),
+            Spacer(min_height=5),
+            Div(text="""<div style="font-size : 18pt; line-height:16pt;">Game Mechanics:</div>"""),
+            row(ctl_mechanics_selection1, ctl_mechanics_selection2),
             )
         )
     
@@ -264,11 +269,11 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
         ctl_recommended_list_title,
         ctl_recommended_games,
         Spacer(min_height=10),
-        ctl_recommend)
+        )
     
     # Create a row layout
-    layout = column(row(pref_controls, Spacer(min_width=50), results_controls), 
-                    filter_controls)
+    layout = row(column(pref_controls,filter_controls), 
+                 Spacer(min_width=50), results_controls)
     
     # Make a tab with the layout   
     tab = Panel(child=layout, title = 'Advanced Game Recommender')

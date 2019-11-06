@@ -5,12 +5,19 @@
 # 
 # NOTE: this only runs as a console command: 
 # 
-# - bokeh serve --show main.py
+# - bokeh serve --show bokeh_app/
 # 
 # If run in Jupyter, it will give an error: "name '__file__' is not defined"
 # 
 
-# In[5]:
+# In[1]:
+
+
+s = 'lords of waterdeep'
+s.replace(' ','+')
+
+
+# In[1]:
 
 
 # Pandas for data management
@@ -90,29 +97,4 @@ tabs = Tabs(tabs = [tab1,tab2])
 
 # Put the tabs in the current document for display
 curdoc().add_root(tabs)
-
-
-# to run:
-# 
-# bokeh serve --show bokeh_app/
-
-# In[1]:
-
-
-# title_list = allgames['name']
-# title_list_lower = [s.lower() for s in title_list]
-
-# title = 'catan'
-# idx = (np.array(title_list_lower) 
-#        == title.lower()).nonzero()[0][0]
-# print('idx: ',idx)
-
-# info = allgames.iloc[idx,:]
-# type(info['weight'])
-
-
-# In[ ]:
-
-
-
 
