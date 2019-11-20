@@ -119,7 +119,7 @@ def recommender_tab_simple(recommender):
         
         # display a "Searching for recommendations..." message
         # Note: Bokeh doesn't do redraw while inside handlers
-        #show_searching_message()
+        show_searching_message()
         
         # get some default filter parameters:
         weight = []

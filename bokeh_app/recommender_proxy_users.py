@@ -187,7 +187,7 @@ class RecommenderProxyUsers():
         proxy_idx = self.get_sorted_proxy_index(liked_item_ids)
 
         # average ratings for all items among proxy users
-        ratings = np.mean(self.ratings_from_factors(proxy_idx), axis=0)
+        ratings = np.mean(self.ratings_from_factors(proxy_idx[:self.n_proxy_users]), axis=0)
         
         # Create some randomness here by adding a +/- random 
         #   value to the ratings
