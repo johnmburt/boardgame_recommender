@@ -50,7 +50,7 @@ datadir = './data/'
 n_proxy_users = 100
 
 # relative file path to recommender data
-datafilepath = join(dirname(__file__), 'data', 'bgg_pu_data.pkl')
+datafilepath = join(dirname(__file__), 'data', 'bgg_pu_data_30k.pkl')
 # datafilepath = datadir+'bgg_pu_data.pkl'
 
 # load model
