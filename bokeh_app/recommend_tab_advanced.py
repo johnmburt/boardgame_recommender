@@ -29,7 +29,7 @@ from bokeh.models.widgets import (CheckboxGroup, AutocompleteInput,
 from bokeh.layouts import column, row, WidgetBox, Spacer
 from bokeh.palettes import Category20_16
 
-def recommender_tab_advanced(recommender, allgames, categories, mechanics):
+def recommender_tab_advanced(recommender):
 
     def make_div_list(textlist, max_lines, fmt_str="""%s""", **attribs):
         """create a list of divs containing text to display"""
@@ -128,9 +128,12 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
         global games_all, n_recommendations, title_list
         global category_includes, mechanics_includes
         
+        # get game IDs for titles
+        liked_ids = recommender.get_item_title_id(liked_games)
+                
         # select games to search from based on filters:
-        recommended_games = recommender.recommend_games_by_pref_list(
-            liked_games, games_all, num2rec=n_recommendations,
+        recommended_games = recommender.recommend_items_by_pref_list(
+             liked_ids, num2rec=n_recommendations,
              weightrange=ctl_game_weight.value,
              minrating=ctl_game_min_rating.value,
              categories_include=category_includes,
@@ -151,7 +154,7 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     global games_by_title
     
     # layout params
-    n_recommendations = 5
+    n_recommendations = 10
     max_liked = 8
     num_check_options = 20
     
@@ -160,7 +163,7 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     liked_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
     
     # variables used by the tab
-    games_all = allgames # use all games for search     
+    games_all = recommender.item_data # use all games for search     
     liked_games = []
     recommended_games = []
     weight_range = [1,5]
@@ -172,7 +175,7 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
     # list of all game titles
     title_list = games_all['name']
     title_list_lower = [s.lower() for s in title_list]
-    games_by_title = allgames.set_index('name')
+    games_by_title = recommender.item_data.set_index('name')
     
     # preferred game entry text control
     ctl_game_entry = AutocompleteInput(
@@ -217,6 +220,9 @@ def recommender_tab_advanced(recommender, allgames, categories, mechanics):
         step = .1, title = 'Minimum average rating', 
                                  width_policy='min')
     ctl_game_min_rating.on_change('value', update_filters)
+
+    # collect all category and mechanics labels from recommender data
+    categories, mechanics = recommender.get_categories_and_mechanics()      
     
     # game category selection
     category_list = ['Any category'] + list(categories['tag'].values)    

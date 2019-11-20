@@ -18,6 +18,7 @@
 import pandas as pd
 import numpy as np
 
+from bokeh.io import curdoc
 from bokeh.plotting import figure
 from bokeh.models import (CategoricalColorMapper, HoverTool, 
     ColumnDataSource, Panel, 
@@ -27,12 +28,13 @@ from bokeh.models.widgets import (CheckboxGroup, AutocompleteInput,
       TableColumn, DataTable, Select)
 from bokeh.layouts import column, row, WidgetBox, Spacer
 from bokeh.palettes import Category20_16
+from time import sleep
 
 
 # In[1]:
 
 
-def recommender_tab_simple(recommender, allgames, categories, mechanics):
+def recommender_tab_simple(recommender):
 
     # create a list of divs
     def make_div_list(textlist, max_lines, fmt_str="""%s""", **attribs):
@@ -89,6 +91,10 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         global n_recommendations
         ctl_recommended_games.children = make_rec_list(titlelist, 
                                                  n_recommendations)
+        
+    def show_searching_message():
+        ctl_recommended_games.children =  [Div(text=
+            '<h1>Searching for recommendations...</h1>')]
 
     # called when a control widget is changed
     def update_preflist(attr, old, new):
@@ -111,6 +117,10 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         global games_all, n_recommendations, title_list
         global title_list_lower
         
+        # display a "Searching for recommendations..." message
+        # Note: Bokeh doesn't do redraw while inside handlers
+        #show_searching_message()
+        
         # get some default filter parameters:
         weight = []
         minrating = 6.5
@@ -128,9 +138,12 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
         weightrange = [max(1,np.min(weight)-0.25),
                        min(5,np.max(weight)+0.25)]
         
+        # get game IDs for titles
+        liked_ids = recommender.get_item_title_id(liked_games)
+        
         # select games to search from based on filters:
-        recommended_games = recommender.recommend_games_by_pref_list(
-            liked_games, games_all, num2rec=n_recommendations,
+        recommended_games = recommender.recommend_items_by_pref_list(
+             liked_ids, num2rec=n_recommendations,
              weightrange=weightrange,
              minrating=minrating,
              categories_include=categories,
@@ -148,8 +161,9 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
     global games_by_title
     
     # layout params
-    n_recommendations = 5
+    n_recommendations = 10
     max_liked = 8
+    
     # Format to use for liked list. 
     # This needs to be changed to work like rec list
     liked_list_fmt = """<div style="font-size : 14pt; line-height:14pt;">%s</div>"""
@@ -158,8 +172,8 @@ def recommender_tab_simple(recommender, allgames, categories, mechanics):
     liked_games = []
     recommended_games = []
     weight_range = [1,5]
-    games_all = allgames # use all games for search 
-    games_by_title = allgames.set_index('name')
+    games_all = recommender.item_data # use all games for search 
+    games_by_title = recommender.item_data.set_index('name')
         
     # list of all game titles
     title_list = games_all['name']
