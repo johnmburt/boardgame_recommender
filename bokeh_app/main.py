@@ -5,7 +5,8 @@
 # 
 # NOTE: this only runs as a console command: 
 # 
-# - bokeh serve bokeh_app --show
+# - From deploy folder:
+#     - bokeh serve bokeh_app/ --show
 # 
 # If run in Jupyter, it will throw "NameError: name '__file__' is not defined"
 # 
